@@ -1,0 +1,31 @@
+# 你的画像从哪些地方长出来。**改这个文件，不用改代码。**
+#
+# data_dir 里的东西全部被 .gitignore 挡着，而且引擎写之前会自查一遍：
+# 目标在 git 仓里且没被 ignore 就直接拒绝写（见 thegreatme/guard.py）。
+
+data_dir: data
+
+sources:
+  # ① 你刚答完的 12 题。学员唯一确定拥有的东西，也是最准的一个源——
+  #    题号不是猜的，是题目原文匹配出来的。
+  #    把 ChatGPT/Claude 的对话记录复制成 .md 丢进去，或者填 answers.template.md。
+  - adapter: metaquestions
+    path: data/metaquestions
+    enabled: true
+
+  # ② 平时的笔记、会议纪要、工单、聊天记录。
+  #    🔴 只收显式标了题号的段落（Q7: xxx）。没标号的不收，但会告诉你拒了几段。
+  #    拒掉的那些正是该拿去问 AI 的：「这段改变了我 12 题里的哪一条？」
+  - adapter: folder
+    path: data/inbox
+    enabled: true
+
+  # ─── 下面两个是「怎么接你自己的语料源」的示例，默认关闭 ───
+  # 想接自己的东西？照着 thegreatme/adapters/ 里这两个写一个新的。
+  - adapter: relations          # 结构化的人物/公司索引（markdown 表格）
+    path: ~/你的路径/relations_index.md
+    enabled: false
+
+  - adapter: memories           # 带 frontmatter 的笔记目录
+    path: ~/你的路径/memory
+    enabled: false

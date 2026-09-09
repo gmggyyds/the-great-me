@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python3 -m pytest tests/ -q
+
+      # 学员的画像绝不能被 git 收走。这条比测试更重要。
+      - name: 数据目录必须被 ignore
+        run: |
+          for f in data/claims.jsonl data/PROFILE.private.md data/inbox/x.md data/metaquestions/y.md; do
+            git check-ignore -q "$f" || { echo "::error::$f 没有被 gitignore——学员的数据会被推上去"; exit 1; }
+          done
+          git check-ignore -q data/metaquestions/answers.template.md \
+            && { echo "::error::答案模板被 ignore 了，学员 clone 下来会没有它"; exit 1; } || true
