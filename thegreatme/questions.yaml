@@ -1,0 +1,96 @@
+_generated_from: meta-questions v0.2.0 · source/meta_questions.yaml
+_warning: 生成物。别手改——改了就和 meta-questions 漂移了。改真源后重跑 tools/sync_questions.py。
+version: 0.2.0
+segments:
+- n: 1
+  title_zh: 我是谁
+  title_en: Who I Am
+  questions:
+  - id: q1
+    n: 1
+    zh: 过去三年，有没有一件事，别人做要花 3 倍的时间或成本，你却做成了？说出具体的时间、金额和结果。
+    en: In the past three years, was there something that would have cost someone else 3x the time or money, but you pulled off? Give the actual timeline, the actual amount, the actual outcome.
+    want:
+    - number
+    - date
+  - id: q2
+    n: 2
+    zh: 你身上有没有一个别人觉得「你怎么会这个」的技能或经历？它当初是怎么来的？
+    en: Do you have a skill or experience that makes people say 'wait, how do you know that?' Where did it come from?
+    want:
+    - story
+  - id: q3
+    n: 3
+    zh: 有没有一类问题，大家习惯性来找你问？最近一次是谁、问的什么？
+    en: Is there a kind of question people habitually bring to you? Who came last, and what did they ask?
+    want:
+    - name
+- n: 2
+  title_zh: 我手里有什么
+  title_en: What I Hold
+  questions:
+  - id: q4
+    n: 4
+    zh: 列 3 样你已经花过钱、花过时间攒下来的东西（数据、库存、内容、账号、供应链关系、代码、现金流……），每样给一个数字。
+    en: List 3 things you have already paid for — in money or in time (data, inventory, content, accounts, supplier relationships, code, cash flow). Attach a number to each.
+    want:
+    - number
+  - id: q5
+    n: 5
+    zh: 这 3 样里，哪一样是别人花钱也短期买不到的？为什么买不到？
+    en: Which of those three could someone NOT buy quickly, even with money? Why not?
+    want:
+    - story
+  - id: q6
+    n: 6
+    zh: 这 3 样里，哪一样现在基本躺着没用？躺了多久？为什么没用起来？
+    en: Which of the three is currently sitting idle? For how long? Why has it not been put to work?
+    want:
+    - number
+    - date
+- n: 3
+  title_zh: 我认识谁
+  title_en: Whom I Know
+  questions:
+  - id: q7
+    n: 7
+    zh: 谁能替你开一扇你自己敲不开的门？写出那扇门具体是什么。
+    en: Who can open a door you cannot knock on yourself? Name the door, specifically.
+    want:
+    - name
+  - id: q8
+    n: 8
+    zh: 谁能在 24 小时内给你一个诚实的「这东西行不行」的判断？他为什么会诚实？
+    en: Who would give you an honest 'this will not work' within 24 hours? What makes them honest with you?
+    want:
+    - name
+  - id: q9
+    n: 9
+    zh: 谁手上有流量或名单，而且他有理由帮你分发？他的理由是什么？（「关系好」不算理由）
+    en: Who holds an audience or a list, and has a REASON to distribute for you? State the reason. ('We're friends' is not a reason.)
+    want:
+    - name
+    - story
+- n: 4
+  title_zh: 杠杆在哪
+  title_en: Where the Leverage Is
+  questions:
+  - id: q10
+    n: 10
+    zh: Swap Test：把 AI 从你现在做的这件事里完全拔掉，你是「变慢」，还是「整个模式垮掉」？只能二选一。
+    en: 'The Swap Test: remove AI entirely from what you are doing. Do you slow down, or does the whole model collapse? Pick one.'
+    want:
+    - choice
+  - id: q11
+    n: 11
+    zh: 如果 AI 明天免费、无限、且不会出错，你现在做的这件事应该长什么样？它会不会根本不该是现在这个形态？
+    en: If AI were free, infinite and never wrong tomorrow — what should this thing look like? Should it even exist in its current shape?
+    want:
+    - story
+  - id: q12
+    n: 12
+    zh: 你现在缺的是哪一种杠杆——劳动力、资本、代码、还是媒体？你过去为什么没拿到它？AI 能不能绕过那个原因？
+    en: Which leverage are you missing — labour, capital, code, or media? Why did you not get it before? Can AI route around that reason?
+    want:
+    - choice
+    - story
