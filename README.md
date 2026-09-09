@@ -7,6 +7,7 @@
 <p>把 <a href="https://github.com/gmggyyds/meta-questions">meta-questions</a> 的答案变成一份常驻的自我画像 · 新笔记持续归位 · AI 做判断前先读它</p>
 
 <p>
+  <a href="https://github.com/gmggyyds/the-great-me/actions"><img alt="CI" src="https://github.com/gmggyyds/the-great-me/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="license" src="https://img.shields.io/badge/license-MIT-black">
   <img alt="deps" src="https://img.shields.io/badge/runtime%20deps-pyyaml-black">
   <img alt="data" src="https://img.shields.io/badge/your%20data-never%20leaves%20your%20machine-black">
