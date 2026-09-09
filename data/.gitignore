@@ -1,0 +1,9 @@
+# 🔴 你的画像：客户、供应商、人脉、收入。永远不进 git。
+# 引擎写之前还会自查一遍（thegreatme/guard.py），双保险。
+*
+!.gitignore
+!inbox/
+!inbox/.gitkeep
+!metaquestions/
+!metaquestions/.gitkeep
+!metaquestions/answers.template.md
