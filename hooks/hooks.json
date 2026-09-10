@@ -1,0 +1,16 @@
+{
+  "description": "会话收尾时，若画像太久没长就提一句。只提醒，不写入——标题号是判断不是解析，hook 做不了。",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/staleness-nudge.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

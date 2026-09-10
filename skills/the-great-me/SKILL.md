@@ -12,12 +12,23 @@ version: 0.1.0
 
 ## 先确认环境
 
+引擎在哪，取决于用户是怎么装的：
+
+| 装法 | 引擎目录 |
+|---|---|
+| 装成插件（`/plugin install the-great-me`） | `$CLAUDE_PLUGIN_ROOT` |
+| 直接 clone 了仓 | 那个 clone 的目录 |
+
 ```bash
-export THEGREATME_CONFIG=<用户的 sources.yaml>   # 没设就是仓里自带那份
-python3 <引擎目录>/thegreatme.py doctor
+ENGINE="${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null)}"
+export THEGREATME_CONFIG=<用户的 sources.yaml>   # 没设就是引擎目录里自带那份
+python3 "$ENGINE/thegreatme.py" doctor
 ```
 
-`doctor` 会报数据目录在哪、连了哪些源。**数据目录不在引擎仓里**是正常的（画像和引擎不该同居）。
+`doctor` 会报数据目录在哪、连了哪些源。**数据目录不在引擎目录里**是正常的，
+而且是推荐做法——引擎会 `git pull` 更新，画像不该跟着它跑。
+用户还没有自己的配置就先建一份：复制引擎里的 `sources.yaml`，把 `data_dir` 改到他想要的位置，
+然后 `export THEGREATME_CONFIG=<那份>`。
 
 ## 12 题的权威文本
 

@@ -44,12 +44,32 @@
 
 ## 开始用
 
+### 装成 Claude Code 插件（推荐）
+
+一次装上 skill 和催更 hook，以后说一句「喂一轮画像」就跑全流程：
+
+```
+/plugin marketplace add gmggyyds/the-great-me
+/plugin install the-great-me
+```
+
+引擎的 Python 依赖仍要装一次（`pyyaml`）：
+
+```bash
+pip install pyyaml
+```
+
+### 或者直接 clone
+
 ```bash
 git clone https://github.com/gmggyyds/the-great-me
 cd the-great-me
 pip install -r requirements.txt
 python3 thegreatme.py doctor        # 第一次先跑这个，看配置对不对
 ```
+
+在这个目录里开 Claude Code，`.claude/skills/` 会自动带上同一个 skill
+（它是指向 `skills/` 的软链，不是拷贝——两份拷贝早晚漂移）。
 
 ### 第一步：把 12 题的答案放进来
 
