@@ -28,6 +28,9 @@ class Source:
 class Config:
     data_dir: Path
     sources: list[Source]
+    # 画像标题上的名字。留空就不带名字——**不能写死**：
+    # 原来 render.py 里硬编码 "Sam · 画像"，学员生成出来的标题也叫 Sam（2026-09-10 发现）。
+    owner: str = ""
 
     @property
     def claims(self) -> Path:
@@ -65,6 +68,7 @@ def load(path: Path | None = None) -> Config:
         raise ClaimError(f"{path.name} 里缺 `sources:` 列表")
     base = path.resolve().parent
     return Config(
+        owner=str(raw.get("owner", "") or "").strip(),
         data_dir=_resolve(raw.get("data_dir", "data"), base),
         sources=[Source(adapter=s["adapter"], path=_resolve(s["path"], base),
                         enabled=bool(s.get("enabled", False)))

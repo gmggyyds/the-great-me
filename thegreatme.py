@@ -21,7 +21,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from thegreatme import card as card_mod  # noqa: E402
 from thegreatme import config, guard, ledger  # noqa: E402
+from thegreatme import report as report_mod  # noqa: E402
 from thegreatme import render as render_mod  # noqa: E402
 from thegreatme.adapters import folder, memories, metaquestions, relations  # noqa: E402
 from thegreatme.questions import QUESTION_TEXT, SOURCE_VERSION  # noqa: E402
@@ -133,10 +135,40 @@ def cmd_accept(args) -> int:
     return 0
 
 
+def cmd_report(args) -> int:
+    cfg = config.load()
+    claims = load_jsonl(cfg.claims)
+    srcs = [s.adapter for s in cfg.sources if s.enabled]
+    text = report_mod.build(claims, window_days=args.days, unmask=args.unmask,
+                            owner=cfg.owner, sources=srcs, per_segment=args.top)
+    path = report_mod.write(text, cfg.data_dir)
+    print(f"  周报 {path}")
+    if args.print:
+        print()
+        print(text)
+    elif not args.unmask:
+        print("  （默认打码。`report --print` 直接打到终端，`--unmask` 看全文——别在 AI 会话里跑）")
+    return 0
+
+
+def cmd_card(args) -> int:
+    cfg = config.load()
+    claims = load_jsonl(cfg.claims)
+    srcs = [s.adapter for s in cfg.sources if s.enabled]
+    term, path = card_mod.build(claims, cfg.data_dir, owner=cfg.owner,
+                                sources=srcs, window_days=args.days)
+    print()
+    print(term)
+    print()
+    print(f"  可截图版 {path}（自包含 HTML，浏览器直接打开）")
+    print("  这张卡**不含任何断言内容**，只有数字和题号——随便发。")
+    return 0
+
+
 def cmd_render(args) -> int:
     cfg = config.load()
     claims = load_jsonl(cfg.claims)
-    out = render_mod.write_both(claims, cfg.data_dir)
+    out = render_mod.write_both(claims, cfg.data_dir, owner=cfg.owner)
     npub = sum(1 for c in claims if c.sensitivity == "public")
     print(f"  可外传 {out['public']}（{npub} 条 public）")
     print(f"  本机用 {out['private']}（{len(claims)} 条）")
@@ -177,6 +209,17 @@ def main() -> int:
     a.add_argument("--q", type=int)
     a.set_defaults(fn=cmd_accept)
     sub.add_parser("render").set_defaults(fn=cmd_render)
+    rp = sub.add_parser("report", help="周报：这周变了什么 + 哪块还是空的")
+    rp.add_argument("--days", type=int, default=7)
+    rp.add_argument("--print", action="store_true", help="同时打到终端")
+    rp.add_argument("--top", type=int, default=8,
+                    help="每段最多列几条新增明细，0 = 不截断（默认 8）")
+    rp.add_argument("--unmask", action="store_true",
+                    help="新增明细显示全文。⚠️ 含 private，别在 AI 会话里跑")
+    rp.set_defaults(fn=cmd_report)
+    cd = sub.add_parser("card", help="进度卡：零内容、可截图、可传播")
+    cd.add_argument("--days", type=int, default=7)
+    cd.set_defaults(fn=cmd_card)
     sub.add_parser("status").set_defaults(fn=cmd_status)
     args = ap.parse_args()
     # 落成环境变量，config.load() 的 7 个调用点就都不用改签名

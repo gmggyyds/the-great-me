@@ -97,11 +97,17 @@ def _header(title: str, claims: list[Claim], today: str, note: str) -> list[str]
     ]
 
 
-def render_public(claims: list[Claim], today: str | None = None) -> str:
+def _title(owner: str, suffix: str) -> str:
+    """名字来自配置的 `owner:`，留空就不带名字。
+    写死名字的后果：所有学员生成出来的标题都叫别人的名字（2026-09-10 发现并修）。"""
+    return f"{owner} · 画像（{suffix}）" if owner else f"画像（{suffix}）"
+
+
+def render_public(claims: list[Claim], today: str | None = None, owner: str = "") -> str:
     today = today or date.today().isoformat()
     pub = [c for c in claims if c.sensitivity == Sensitivity.PUBLIC.value]
     lines = _header(
-        "Sam · 画像（脱敏层）", pub, today,
+        _title(owner, "脱敏层"), pub, today,
         "只包含显式标记为 public 的断言，可进云端模型上下文。默认全部为私有——"
         "这里为空是正常起点，不是缺数据。",
     )
@@ -114,10 +120,10 @@ def render_public(claims: list[Claim], today: str | None = None) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def render_private(claims: list[Claim], today: str | None = None) -> str:
+def render_private(claims: list[Claim], today: str | None = None, owner: str = "") -> str:
     today = today or date.today().isoformat()
     lines = _header(
-        "Sam · 画像（全量）", claims, today,
+        _title(owner, "全量"), claims, today,
         "🔴 含客户/供应商/关系/收入等敏感信息。**只在本机使用，不要粘进云端对话，"
         "不要提交进任何仓库。**",
     )
@@ -125,14 +131,15 @@ def render_private(claims: list[Claim], today: str | None = None) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def write_both(claims: list[Claim], out_dir: Path, today: str | None = None) -> dict[str, Path]:
+def write_both(claims: list[Claim], out_dir: Path, today: str | None = None,
+               owner: str = "") -> dict[str, Path]:
     pub, priv = out_dir / "PROFILE.md", out_dir / "PROFILE.private.md"
     for p in (pub, priv):
         guard.assert_not_tracked(p)
         guard.assert_within(out_dir, p)
     out_dir.mkdir(parents=True, exist_ok=True)
-    pub.write_text(render_public(claims, today), encoding="utf-8")
-    priv.write_text(render_private(claims, today), encoding="utf-8")
+    pub.write_text(render_public(claims, today, owner), encoding="utf-8")
+    priv.write_text(render_private(claims, today, owner), encoding="utf-8")
     for p in (pub, priv):
         p.chmod(0o600)
     return {"public": pub, "private": priv}
