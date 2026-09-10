@@ -39,13 +39,46 @@ ADAPTERS = {
 }
 
 
+ROOT = Path(__file__).resolve().parent      # 引擎目录（插件根 / clone 根）
+DEFAULT_HOME = Path.home() / ".the-great-me"
+
+
+def cmd_init(args) -> int:
+    """建一份**在插件缓存之外**的配置。
+
+    错误提示里一直写着「或跑 `thegreatme.py init`」，但这个命令此前并不存在
+    —— 提示指向一个不存在的命令，等于没有出路（2026-09-10 发现）。
+    """
+    target = Path(args.path).expanduser() if args.path else DEFAULT_HOME
+    cfg_path = target / "sources.yaml"
+    if cfg_path.exists() and not args.force:
+        print(f"已存在 {cfg_path}（要覆盖加 --force）")
+        print(f"用它：export THEGREATME_CONFIG={cfg_path}")
+        return 0
+    guard.assert_not_in_plugin_cache(cfg_path)
+    template = (ROOT / "sources.yaml").read_text(encoding="utf-8")
+    (target / "data").mkdir(parents=True, exist_ok=True)
+    (target / "data" / "inbox").mkdir(exist_ok=True)
+    (target / "data" / "metaquestions").mkdir(exist_ok=True)
+    cfg_path.write_text(template, encoding="utf-8")
+    print(f"✅ 配置已建：{cfg_path}")
+    print(f"   数据会落 {target / 'data'}/（在插件缓存之外，更新插件不会动它）")
+    print()
+    print("加到你的 shell 配置里，以后就不用每次带 --config：")
+    print(f"   export THEGREATME_CONFIG={cfg_path}")
+    print()
+    print("想要版本历史和回滚？给数据目录建个**本地 git 仓、不加 remote**：")
+    print(f"   git -C {target / 'data'} init")
+    return 0
+
+
 def cmd_doctor(args) -> int:
     cfg = config.load()
     print(f"12 题来自 meta-questions v{SOURCE_VERSION}（{len(QUESTION_TEXT)} 题）")
     print(f"数据目录 {cfg.data_dir}")
     try:
         guard.assert_not_tracked(cfg.claims)
-        print("  ✅ 数据不会被 git 收走")
+        print("  ✅ 数据不会被 git 收走，也不在插件缓存里")
     except ClaimError as e:
         print(f"  🔴 {e}")
         return 2
@@ -221,6 +254,10 @@ def main() -> int:
     cd.add_argument("--days", type=int, default=7)
     cd.set_defaults(fn=cmd_card)
     sub.add_parser("status").set_defaults(fn=cmd_status)
+    it = sub.add_parser("init", help="在插件缓存之外建一份自己的配置（默认 ~/.the-great-me/）")
+    it.add_argument("path", nargs="?", help="放哪，默认 ~/.the-great-me")
+    it.add_argument("--force", action="store_true")
+    it.set_defaults(fn=cmd_init)
     args = ap.parse_args()
     # 落成环境变量，config.load() 的 7 个调用点就都不用改签名
     if args.config:

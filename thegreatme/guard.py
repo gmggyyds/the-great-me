@@ -22,6 +22,30 @@ def _git(args, cwd):
         return None
 
 
+# 插件缓存的形状：~/.claude/plugins/cache/<市场>/<插件>/<版本>/
+# 版本号是目录名的一部分，`claude plugin update` 会换掉整个版本目录。
+_PLUGIN_CACHE = ("/.claude/plugins/cache/", "/.claude/plugins/marketplaces/")
+
+
+def assert_not_in_plugin_cache(path: Path) -> None:
+    """插件缓存里的东西会被 `plugin update` 整目录换掉 —— 画像写进去就是等着丢。
+
+    装成插件之后，引擎跑在缓存目录里，而自带的 sources.yaml 写的是 `data_dir: data`，
+    相对路径按配置文件所在目录算 → 数据正好落在缓存里。用户不会知道，直到某次更新之后
+    155 条断言凭空消失（2026-09-10 装完插件当场复现）。
+
+    这里 fail-closed：宁可不写，也不写到一个随时会被清掉的地方。
+    """
+    s = str(path.resolve() if path.is_absolute() else path.absolute())
+    if any(seg in s for seg in _PLUGIN_CACHE):
+        raise ClaimError(
+            f"拒绝写 {path}：它在**插件缓存**里，`claude plugin update` 会把整个版本目录换掉，"
+            "写进去的画像会随更新一起消失。\n"
+            "修法：跑 `thegreatme.py init` 建一份自己的配置（默认落 ~/.the-great-me/），"
+            "然后 `export THEGREATME_CONFIG=~/.the-great-me/sources.yaml`。"
+        )
+
+
 def assert_not_tracked(path: Path) -> None:
     """目标若落在某个 git work tree 内，要么该仓没有 remote，要么它得被 ignore。
 
@@ -33,6 +57,8 @@ def assert_not_tracked(path: Path) -> None:
 
     每次写都重新查一遍：哪天这个仓被加了 remote，下一次写就会重新开始拒绝。
     """
+    # 挂在这里而不是各写入点：5 个写入点都要过 assert_not_tracked，这是唯一的收口。
+    assert_not_in_plugin_cache(path)
     d = path.parent
     probe = d if d.exists() else next((p for p in d.parents if p.exists()), Path("/"))
     inside = _git(["rev-parse", "--is-inside-work-tree"], probe)

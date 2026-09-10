@@ -53,11 +53,18 @@
 /plugin install the-great-me
 ```
 
-引擎的 Python 依赖仍要装一次（`pyyaml`）：
+然后装一次 Python 依赖，并**建一份属于你自己的配置**：
 
 ```bash
 pip install pyyaml
+python3 "$CLAUDE_PLUGIN_ROOT/thegreatme.py" init      # 默认落 ~/.the-great-me/
+export THEGREATME_CONFIG=~/.the-great-me/sources.yaml # 加进 shell 配置，一次就好
 ```
+
+🔴 **`init` 这一步不能省。** 插件装在 `~/.claude/plugins/cache/<插件>/<版本>/`，
+版本号是目录名的一部分——`plugin update` 会把整个版本目录换掉。不建自己的配置，
+数据就落在缓存里，某次更新之后画像凭空消失。引擎现在会**直接拒绝**往那儿写，
+但知道为什么比撞上报错更省事。
 
 ### 或者直接 clone
 

@@ -1,7 +1,7 @@
 {
   "name": "the-great-me",
   "description": "让 12 个元问题的答案常驻并跟着你长：把笔记/纪要按题号收进带出处的账本，AI 做判断前先读它。含周报与可截图的进度卡。",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "GMGG"
   },

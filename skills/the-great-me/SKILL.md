@@ -1,7 +1,7 @@
 ---
 name: the-great-me
 description: 把外部笔记（Get笔记 / 飞书妙记 / 会议纪要 / 工单）按 12 题标好题号喂进个人画像账本，跑完 harvest→accept→render，出周报和可截图的进度卡。触发词：更新我的画像 / 喂一轮画像 / the-great-me / 画像周报 / 我的进度卡 / 扫一下我最近的笔记。
-version: 0.1.0
+version: 0.1.1
 ---
 
 # the-great-me · 让 12 题的答案常驻并跟着你长

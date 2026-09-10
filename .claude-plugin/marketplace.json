@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "个人上下文层：12 个元问题的答案常驻在本机，带出处、可追溯、跟着你长",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "plugins": [
     {
