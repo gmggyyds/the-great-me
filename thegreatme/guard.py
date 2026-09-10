@@ -14,26 +14,44 @@ from pathlib import Path
 from .schema import ClaimError
 
 
+def _git(args, cwd):
+    try:
+        return subprocess.run(["git", *args], cwd=cwd, capture_output=True,
+                              text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
 def assert_not_tracked(path: Path) -> None:
-    """目标若落在某个 git work tree 内，必须被 ignore；否则拒绝写。"""
+    """目标若落在某个 git work tree 内，要么该仓没有 remote，要么它得被 ignore。
+
+    判据是「能不能离机」，不是「在不在 git 里」。
+    仓里**一个 remote 都没有**时，`git add -A` 也没有地方可推 —— 这正是 README 推荐的
+    「给数据目录建个本地 git 仓、不加 remote」：拿到完整版本历史，又物理上传不出去。
+    早先只认 ignore，于是**推荐的做法会被自己的护栏拒绝**，报错还让人去 ignore 掉那个
+    文件——正好废掉版本历史这个初衷（2026-09-10 实测）。
+
+    每次写都重新查一遍：哪天这个仓被加了 remote，下一次写就会重新开始拒绝。
+    """
     d = path.parent
     probe = d if d.exists() else next((p for p in d.parents if p.exists()), Path("/"))
-    try:
-        inside = subprocess.run(
-            ["git", "rev-parse", "--is-inside-work-tree"], cwd=probe,
-            capture_output=True, text=True, timeout=5,
-        )
-    except (OSError, subprocess.SubprocessError):
+    inside = _git(["rev-parse", "--is-inside-work-tree"], probe)
+    if inside is None:
         return                                   # 没有 git 就没有这个风险
     if inside.returncode != 0 or inside.stdout.strip() != "true":
         return
-    ignored = subprocess.run(["git", "check-ignore", "-q", str(path)], cwd=probe,
-                             capture_output=True, timeout=5)
-    if ignored.returncode != 0:
+    remotes = _git(["remote"], probe)
+    if remotes is not None and remotes.returncode == 0 and not remotes.stdout.strip():
+        return                                   # 零 remote：推不出去
+    ignored = _git(["check-ignore", "-q", str(path)], probe)
+    if ignored is None or ignored.returncode != 0:
         raise ClaimError(
-            f"拒绝写 {path}：它在一个 git 仓库里且**未被 git ignore**。\n"
+            f"拒绝写 {path}：它在一个**有远端**的 git 仓库里，且未被 git ignore。\n"
             f"画像含客户/供应商/人脉/收入，一次 `git add -A` 就会离机。\n"
-            f"修法：在该仓 .gitignore 里加一行 `{path.parent.name}/`，再重跑。"
+            f"两条修法，二选一：\n"
+            f"  · 在该仓 .gitignore 里加一行 `{path.parent.name}/`\n"
+            f"  · 或把数据目录做成**独立的本地 git 仓、不加 remote**"
+            f"（有版本历史，且推不出去）"
         )
 
 

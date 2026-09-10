@@ -256,11 +256,20 @@ import subprocess  # noqa: E402
 from thegreatme import guard  # noqa: E402
 
 
+def _repo_with_remote(tmp_path):
+    """还原 F1 的案发条件：一个**带 remote** 的 git 仓。
+    原来这里只 `git init` 不加 remote，等于没还原现场——真正决定风险的是有没有远端。"""
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "remote", "add", "origin",
+                    "https://github.com/someone/private-notes.git"],
+                   cwd=tmp_path, check=True)
+
+
 def test_F1_refuses_to_write_into_a_git_repo_that_does_not_ignore_it(tmp_path):
     """实锤：~/.claude 是带 GitHub remote 的 git 仓，而 PROFILE.private.md 未被 ignore，
     离一次 `git add -A` 就把 37KB 客户/供应商/人脉推上 GitHub。
     文案写「不要提交进任何仓库」没有任何执行力——所以写之前自己查。"""
-    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    _repo_with_remote(tmp_path)
     target = tmp_path / "self" / "claims.jsonl"
     with pytest.raises(ClaimError, match="未被 git ignore"):
         guard.assert_not_tracked(target)
@@ -270,6 +279,26 @@ def test_F1_refuses_to_write_into_a_git_repo_that_does_not_ignore_it(tmp_path):
 
 def test_F1_writing_outside_any_repo_is_fine(tmp_path):
     guard.assert_not_tracked(tmp_path / "x" / "claims.jsonl")
+
+
+def test_a_repo_with_no_remote_is_allowed(tmp_path):
+    """README 明写「想要历史和回滚？给数据目录建个本地 git 仓、不加 remote」。
+    早先的护栏会把这个推荐做法直接拒掉，报错还让人去 ignore 掉那个文件——
+    正好废掉版本历史这个初衷（2026-09-10 实测）。
+    判据是「能不能离机」：零 remote 的仓，`git add -A` 也没地方可推。"""
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    guard.assert_not_tracked(tmp_path / "claims.jsonl")     # 不 ignore 也放行
+
+
+def test_adding_a_remote_later_starts_refusing_again(tmp_path):
+    """每次写都重查。今天没远端不代表明天没有——不缓存这个判断。"""
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    target = tmp_path / "claims.jsonl"
+    guard.assert_not_tracked(target)
+    subprocess.run(["git", "remote", "add", "origin",
+                    "https://github.com/someone/x.git"], cwd=tmp_path, check=True)
+    with pytest.raises(ClaimError, match="未被 git ignore"):
+        guard.assert_not_tracked(target)
 
 
 def test_F2_bool_cannot_slip_through_the_question_gate():
