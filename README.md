@@ -112,8 +112,55 @@ python3 tools/sync_questions.py     # 需要本地 clone 了 meta-questions
 
 ## 接你自己的语料源
 
-`sources.yaml` 里那两个默认关闭的（`relations` / `memories`）是示例，
-照着 `thegreatme/adapters/` 里它们的写法加一个就行。三条规矩：
+先确认**要不要写代码**。多数情况不用。
+
+### 有 CLI 的源 —— 不用写适配器
+
+`folder` 适配器只认一件事：`data/inbox/` 里的 `.md`，段落开头标了 `Q<n>:`。
+所以任何能把内容打到标准输出的 CLI，**现在就已经能接进来了**。
+缺的从来不是适配器，是一条「抓下来的时候顺手标题号」的规则。
+
+**① 让 CLI 把原文落进 `data/inbox/`**
+
+```bash
+# 得到 / Get 笔记 —— 能列表、能增量
+getnote notes --all > data/inbox/getnote.md
+getnote notes --since-id <上次最后一条的 id>     # 之后只取新增
+
+# 飞书妙记 —— 只能按 token 取单条，CLI 没有列表接口
+#（minute_token = 妙记链接 /minutes/ 后面那段）
+lark-cli minutes minutes get --params '{"minute_token":"<token>"}'
+```
+
+⚠️ **先确认这些 CLI 在你手上是通的**，别等标完题号才发现拉不到东西：
+
+- Get 笔记的 OpenAPI **要会员**。没有的话 `getnote quota` 直接返回
+  `403 / not_member`，`notes`、`kbs` 一并不可用。
+- 飞书妙记走的是你自建应用的凭证，得先给应用开 `minutes:minutes:readonly`。
+
+两个源的节奏也不一样：得到可以定期扫，妙记是**开完会顺手粘一条**。
+换成别的工具同理——只要它有 CLI，这一步就是一行重定向。
+
+**② 加一条规则，让 AI 在落盘前标题号**
+
+写进 `~/.claude/CLAUDE.md`（或你那个 agent 的规则文件）：
+
+> 把任何外部笔记写进 `the-great-me/data/inbox/` 之前：
+> 先读 `thegreatme/questions.yaml` 里的 12 题，逐段给内容标上 `Q<n>:` 前缀。
+> **挂不上任何一题的段落直接丢掉，不要硬塞。**
+> 每段末尾附出处（笔记 id / 妙记 token + 日期），审的时候要能查回去。
+
+标题号这件事本来就该由**读得懂内容的那一方**做——它是判断，不是解析。
+写成 Python 适配器只会得到一堆猜错的题号（见下面「它不做什么」第二条）。
+让规则去做，等于把 AI 当成那一层，而且换任何新工具都不用改代码。
+
+落完盘照常 `harvest → review → accept`，「审」那一步还会再把关一次。
+
+### 真需要写适配器的情况
+
+源不是 CLI，而是结构化文件（markdown 表格、带 frontmatter 的笔记目录）。
+`sources.yaml` 里那两个默认关闭的（`relations` / `memories`）就是示例，
+照着 `thegreatme/adapters/` 里它们的写法加一个。三条规矩：
 
 1. **只读**，永远不写回源
 2. **只提议不判定**：提取内容、提议题号、附证据指针，准不准交给「审」那一步
