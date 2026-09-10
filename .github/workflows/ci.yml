@@ -16,6 +16,24 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python3 -m pytest tests/ -q
 
+      # 端到端：装成插件之后的那条真实路径。单元测试碰不到这一层
+      # （引擎跑在缓存目录里 / 配置和数据在别处 / 软链有没有被 clone 变成拷贝 /
+      #  学员粘贴整段对话能不能被认出来）。
+      - name: 学员旅程沙箱
+        run: python3 sandbox/student_journey.py
+
+      # 沙箱本身必须是个有效的检测器——把产品故意改坏，它得报红。
+      # 不验这一条，沙箱可能只是个橡皮图章（实测踩过：一条判据在通过和失败时都成立）。
+      - name: 沙箱变异自检
+        run: |
+          for m in sandbox/mutations/*.py; do
+            if SANDBOX_MUTATE="$m" python3 sandbox/student_journey.py > /tmp/out 2>&1; then
+              echo "::error::注入 $m 之后沙箱仍然全绿——这个检测器是失效的"
+              tail -20 /tmp/out; exit 1
+            fi
+            echo "  ✅ $m 被抓到"
+          done
+
       # 学员的画像绝不能被 git 收走。这条比测试更重要。
       - name: 数据目录必须被 ignore
         run: |
