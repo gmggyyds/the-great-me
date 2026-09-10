@@ -100,6 +100,17 @@ Q9: 老周有行业公众号矩阵，他缺工厂端的原创内容，我这边�
 想要历史和回滚？给 `data/` 建个**本地 git 仓、不加 remote**——有完整版本历史，
 而且因为没有远端，物理上传不出去。
 
+**想把数据整个挪出这个仓**（画像和引擎本来也不该住在一起）：
+
+```bash
+cp sources.yaml ~/.mine/sources.yaml     # 把里面的 data_dir 改成你想要的位置
+export THEGREATME_CONFIG=~/.mine/sources.yaml
+# 或者每次显式指定：thegreatme.py --config ~/.mine/sources.yaml status
+```
+
+配置里的**相对路径按该配置文件所在目录算**，不是按仓根——不然数据会被写回引擎目录，
+而引擎目录是个公开仓。之后 `git pull` 更新引擎完全不碰你的数据。
+
 ## 12 个问题从哪来
 
 不在这个仓里手抄。`thegreatme/questions.yaml` 由 `tools/sync_questions.py` 从

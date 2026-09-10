@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from collections import Counter
 from datetime import date
@@ -161,6 +162,9 @@ def cmd_status(args) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="the-great-me · 让 12 题的答案常驻并跟着你长")
+    ap.add_argument("--config", metavar="PATH",
+                    help="用别处的 sources.yaml（也可用环境变量 THEGREATME_CONFIG）。"
+                         "里面的相对路径按该文件所在目录算。")
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("doctor").set_defaults(fn=cmd_doctor)
     sub.add_parser("harvest").set_defaults(fn=cmd_harvest)
@@ -175,6 +179,9 @@ def main() -> int:
     sub.add_parser("render").set_defaults(fn=cmd_render)
     sub.add_parser("status").set_defaults(fn=cmd_status)
     args = ap.parse_args()
+    # 落成环境变量，config.load() 的 7 个调用点就都不用改签名
+    if args.config:
+        os.environ[config.ENV_CONFIG] = args.config
     try:
         return args.fn(args)
     except ClaimError as e:
