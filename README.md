@@ -105,6 +105,11 @@ python3 thegreatme.py render        # 出 PROFILE.md（可外传）+ PROFILE.pri
 </td></tr>
 </table>
 
+
+<div align="center">
+<img src="./compare.gif" alt="每次从零 vs 带着画像" width="100%">
+</div>
+
 ## 🚪 那道闸
 
 `12 题答案 + 平时的笔记 → 题号闸 → 账本 → 两份画像`
@@ -320,5 +325,18 @@ the-great-me/
 一份写完就找不回来的报告，和一份 AI 每次判断前都会读的画像，中间差的不是内容，是它住在哪儿。
 
 **答完 12 题了？把它放进来，让它跟着你长。**
+
+
+---
+
+<div align="center">
+
+<img src="./mascot.png" alt="国民哥哥 Sam" width="150">
+
+**国民哥哥出品**
+
+<sub>做的每一个东西，都是自己每天在用的</sub>
+
+</div>
 
 <sub>MIT License</sub>
